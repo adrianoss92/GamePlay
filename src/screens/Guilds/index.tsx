@@ -1,4 +1,4 @@
-import React  from 'react';
+import React, { useState, useEffect }  from 'react';
 import { 
   View, 
   FlatList
@@ -6,6 +6,8 @@ import {
 import { Guild, GuildProps } from '../../components/Guild';
 import { styles } from './styles';
 import { ListDivider } from '../../components/ListDivider';
+import { Load } from '../../components/Load';
+import { api } from '../../service/api';
 
 type Props = {
   handleGuildSelect: (guild: GuildProps) => void;
@@ -13,42 +15,32 @@ type Props = {
 
 export function Guilds({handleGuildSelect}: Props){
 
+  const [guilds, setGuilds] = useState<GuildProps[]>([]);
+  const [loading, setloading] = useState(true);
 
-  const guilds = [
-    {
-      id: '1',
-      name: 'Lendários',
-      icon: 'image.png',
-      owner: true
-    },
-    {
-      id: '2',
-      name: 'Top Noobs',
-      icon: 'image.png',
-      owner: false
-    },   
-    {
-      id: '3',
-      name: 'Lendários',
-      icon: 'image.png',
-      owner: true
-    },
-    {
-      id: '4',
-      name: 'Top Noobs',
-      icon: 'image.png',
-      owner: false
-    },
-    {
-      id: '6',
-      name: 'Top Noobs',
-      icon: 'image.png',
-      owner: false
-    }
-  ];
+  async function fetchGuild(){
+    const response = await api.get('/users/@me/guilds');
+
+    setGuilds(response.data);
+    setloading(false);
+  }
+
+  useEffect(()=> {
+    fetchGuild();
+  },[]);
+
   return (
     <View style={styles.container}>
-      <FlatList 
+      { 
+        loading 
+        
+        ? 
+
+        <Load/> 
+        
+        :
+
+        <FlatList 
         data={guilds}
         keyExtractor={item => item.id}
         renderItem={({item}) => (
@@ -63,6 +55,7 @@ export function Guilds({handleGuildSelect}: Props){
         contentContainerStyle={{ paddingBottom: 68, paddingTop: 103 }}
         style={styles.guilds}
       />
+      }
     </View>
   );
 

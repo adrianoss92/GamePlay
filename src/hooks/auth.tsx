@@ -3,22 +3,27 @@ import React,
   createContext,
   useContext,
   useState,
-  ReactNode 
+  ReactNode,
+  useEffect 
 } from 'react';
 import * as AuthSession from 'expo-auth-session';
-
-
-import { 
-  REDIRECT_URI, 
-  SCOPE,
-  RESPONSE_TYPE,
-  CLIENT_ID,
-  CDN_IMAGE
- } from '../config';
 import { api } from '../service/api';
 
-type User ={
-  id: string;
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { COLLECTION_USER } from '../configs/database';
+// import { REDIRECT_URI } from 'react-native-dotenv';
+// import { RESPONSE_TYPE } from 'react-native-dotenv';
+// import { CLIENT_ID } from 'react-native-dotenv';
+// import { CDN_IMAGE } from 'react-native-dotenv';
+// import { SCOPE } from 'react-native-dotenv';
+
+const { REDIRECT_URI } = process.env; 
+const { SCOPE } = process.env;
+const { RESPONSE_TYPE } = process.env;
+const { CLIENT_ID } = process.env;
+const { CDN_IMAGE } = process.env;
+
+type User ={  id: string;
   username: string;
   firstName: string;
   avatar: string;
@@ -38,7 +43,8 @@ type AuthProviderProps ={
 
 type AuthorizationResponse = AuthSession.AuthSessionResult & {
   params: {
-    access_token: string;
+    access_token?: string;
+    error: string;
   }
 }
 
@@ -59,7 +65,7 @@ function AuthProvider({ children }: AuthProviderProps){
 
       console.log(params);
 
-      if(type === 'success'){
+      if(type === 'success' && !params.error){
 
         
         api.defaults.headers.authorization = `Bearer ${params.access_token}`;
@@ -70,21 +76,35 @@ function AuthProvider({ children }: AuthProviderProps){
         const firstName = userInfo.data.username.split(' ')[0];
 
         userInfo.data.avatar = `${CDN_IMAGE}/avatars/${userInfo.data.id}/${userInfo.data.avatar}.png`;
-
-        setUser({
+        
+        const userData = {
           ...userInfo.data,
           firstName,
           token: params.access_token
-        });
-        
-        setLoading(false);
-      } else {
-        setLoading(false);
+        }
+
+        await AsyncStorage.setItem(COLLECTION_USER, JSON.stringify(userData))
+
+        setUser(userData);
       }
     } catch {
       throw new Error('Não foi possivel autenticar.');
-    } 
+    } finally {
+      setLoading(false);
+    }
   }
+  async function loadUserStoregeData(){ // Função para pegar o token de um usuário que já esta logado no app
+    const storage = await AsyncStorage.getItem(COLLECTION_USER);
+    if(storage){
+      const userLogged = JSON.parse(storage) as User;
+      api.defaults.headers.authorization = `Bearer ${userLogged.token}`;
+
+      setUser(userLogged);
+    }
+  }
+  useEffect(()=> {
+    loadUserStoregeData();
+  })
 
   return(
     <AuthContext.Provider value={{
