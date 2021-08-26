@@ -4,6 +4,7 @@ import { styles } from './style';
 import DiscordSvg from '../../assets/discord.svg'
 
 const { CDN_IMAGE } = process.env;
+
 type Props ={
   guildId: string;
   iconId: string | null;
@@ -17,18 +18,14 @@ export function GuildIcon({ guildId, iconId }: Props){
   return (    
     <View style={styles.container}> 
       {
-        iconId 
-        
-        ?
-        
+        iconId ? 
+
         <Image 
           source={{uri}}
           style={styles.image}
           resizeMode= "cover"
         />
-        
         :
-
         <DiscordSvg 
           width={40}
           height={40}

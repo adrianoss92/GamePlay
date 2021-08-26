@@ -35,6 +35,7 @@ type AuthContextData = {
   user: User;
   loading: boolean;
   signIn: () => Promise<void>;
+  singOut: () => Promise<void>;
 }
 
 type AuthProviderProps ={
@@ -93,6 +94,12 @@ function AuthProvider({ children }: AuthProviderProps){
       setLoading(false);
     }
   }
+
+  async function singOut(){
+    setUser({} as User);
+    await AsyncStorage.removeItem(COLLECTION_USER);
+  }
+
   async function loadUserStoregeData(){ // Função para pegar o token de um usuário que já esta logado no app
     const storage = await AsyncStorage.getItem(COLLECTION_USER);
     if(storage){
@@ -110,7 +117,8 @@ function AuthProvider({ children }: AuthProviderProps){
     <AuthContext.Provider value={{
       user,
       loading,
-      signIn
+      signIn,
+      singOut
     }}>
       { children }
     </AuthContext.Provider>

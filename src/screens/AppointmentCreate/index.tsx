@@ -59,9 +59,9 @@ export function AppointmentCreate(){
   function handleCategorySelect(categoryId: string){
     setCategory(categoryId);
   }
-  function validationInputDate(input: string, tipo: string, ){
+  // function validationInputDate(input: string, tipo: string, ){
     
-  }
+  // }
 
   async function handleSave(){
     const newAppointment = {
